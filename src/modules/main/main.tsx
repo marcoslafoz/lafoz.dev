@@ -10,7 +10,7 @@ export const Main: React.FC<MainProps> = props => {
     <div id="cont">
       <center>
         <div className='title'>
-          Memento Mori
+          <b>marcos</b>lafoz
         </div>
       </center>
     </div>

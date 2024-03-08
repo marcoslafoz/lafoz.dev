@@ -10,6 +10,7 @@ body {
 }
 
 .title {
+  font-size: 30px;
   background: linear-gradient(to right,
       #7953cd 20%,
       #00affa 30%,
