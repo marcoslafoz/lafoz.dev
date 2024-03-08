@@ -9,8 +9,9 @@ export const Main: React.FC<MainProps> = props => {
   return (
     <div id="cont">
       <center>
-        <img id="logo" src={logo} alt=''/>
-          <p id="msg">Work in progress</p>
+        <div className='title'>
+          Memento Mori
+        </div>
       </center>
     </div>
   )
