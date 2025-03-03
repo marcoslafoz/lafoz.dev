@@ -1,0 +1,43 @@
+Configurar VLAN
+vlan [ID_VLAN]
+name [nombre_VLAN]
+interface [tipo_interface] [número_interface]
+switchport mode access
+switchport access vlan [ID_VLAN]
+interface [tipo_interface] [número_interface]
+switchport mode trunk
+switchport trunk allowed vlan [ID_VLAN]
+
+Spanning tree
+spanning-tree mode [pvst | rapid-pvst | mst]
+spanning-tree vlan [ID_VLAN] priority [valor_prioridad]
+interface [tipo_interface] [número_interface]
+spanning-tree cost [valor_costo]
+
+Montar DHCP en Router
+ip dhcp pool [nombre_pool]
+network [dirección_red] [máscara_subred]
+default-router [dirección_IP_puerta_enlace]
+dns-server [dirección_IP_servidor_DNS]
+ip dhcp excluded-address [dirección_IP_inicial] [dirección_IP_final]
+
+Listas ACL
+access-list [número] [permit | deny] [dirección_IP] [wildcard_mask]
+(access-list 10 permit 192.168.1.0 0.0.0.255)
+interface [tipo_interface] [número_interface]
+ip access-group [número] [in | out]
+(interface GigabitEthernet0/1)
+(ip access-group 10 in)
+
+Listas ACL Ext.
+access-list [número] [permit | deny] [protocolo] [dirección_IP_origen] [wildcard_mask] [dirección_IP_destino] [wildcard_mask] [eq | gt | lt | neq | range] [puerto]
+(access-list 100 permit tcp 192.168.1.0 0.0.0.255 any eq 80)
+interface [tipo_interface] [número_interface]
+ip access-group [número] [in | out]
+(interface GigabitEthernet0/1)
+(ip access-group 100 out)
+
+ACL Extra
+show access-lists
+no access-list [número]
+access-list [número] [permit | deny] [dirección_IP] [wildcard_mask]
