@@ -1,5 +1,5 @@
 services:
-  studentspace:
+  lafozdev:
     build:
       context: .
       dockerfile: Dockerfile
