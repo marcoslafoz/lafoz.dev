@@ -40,7 +40,11 @@ write memory
 # ROUTER DHCP
 enable
 configure terminal
-dhcp pool RED_LOCAL
+ip routing
+interface vlan 1
+ip address 192.168.1.1 255.255.255.0
+no shut
+ip dhcp pool RED_LOCAL
 network 192.168.1.0 255.255.255.0
 default-router 192.168.1.1
 dns-server 8.8.8.8 8.8.4.4
