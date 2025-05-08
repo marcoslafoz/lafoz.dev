@@ -963,3 +963,188 @@ Notas importantes:
 - Las wildcard masks NO son máscaras de subred. 0.0.0.255 equivale a /24.
 
 Fin de la guía.
+
+
+--------------
+--------------
+--------------
+
+Ejemplos adicionales: bloqueo de protocolos comunes con ACLs extendidas
+
+IMPORTANTE:
+Usar estos comandos en modo de configuración global.
+
+1. Bloquear HTTP (puerto 80)
+access-list 200 deny tcp any any eq 80
+access-list 200 permit ip any any
+
+2. Bloquear HTTPS (puerto 443)
+access-list 201 deny tcp any any eq 443
+access-list 201 permit ip any any
+
+3. Bloquear FTP (puerto 21, control) y FTP Data (puerto 20)
+access-list 202 deny tcp any any eq 21
+access-list 202 deny tcp any any eq 20
+access-list 202 permit ip any any
+
+4. Bloquear SSH (puerto 22)
+access-list 203 deny tcp any any eq 22
+access-list 203 permit ip any any
+
+5. Bloquear Telnet (puerto 23)
+access-list 204 deny tcp any any eq 23
+access-list 204 permit ip any any
+
+6. Bloquear DNS (puerto 53, TCP y UDP)
+access-list 205 deny udp any any eq 53
+access-list 205 deny tcp any any eq 53
+access-list 205 permit ip any any
+
+7. Bloquear ICMP (bloquear ping)
+access-list 206 deny icmp any any
+access-list 206 permit ip any any
+
+8. Bloquear tráfico SMTP (puerto 25)
+access-list 207 deny tcp any any eq 25
+access-list 207 permit ip any any
+
+9. Bloquear tráfico POP3 (puerto 110)
+access-list 208 deny tcp any any eq 110
+access-list 208 permit ip any any
+
+10. Bloquear tráfico IMAP (puerto 143)
+access-list 209 deny tcp any any eq 143
+access-list 209 permit ip any any
+
+11. Bloquear tráfico SNMP (puertos 161 y 162)
+access-list 210 deny udp any any eq 161
+access-list 210 deny udp any any eq 162
+access-list 210 permit ip any any
+
+12. Bloquear tráfico RDP (puerto 3389)
+access-list 211 deny tcp any any eq 3389
+access-list 211 permit ip any any
+
+13. Bloquear tráfico NetBIOS (puertos 137-139)
+access-list 212 deny udp any any range 137 139
+access-list 212 permit ip any any
+
+14. Bloquear tráfico SMB (puerto 445)
+access-list 213 deny tcp any any eq 445
+access-list 213 permit ip any any
+
+15. Bloquear tráfico DHCP (puertos 67 y 68 UDP)
+access-list 214 deny udp any any eq 67
+access-list 214 deny udp any any eq 68
+access-list 214 permit ip any any
+
+------------------------------------------------
+Aplicación de la ACL (ejemplo)
+------------------------------------------------
+
+interface g0/0
+ ip access-group 200 in
+
+------------------------------------------------
+Verificación:
+------------------------------------------------
+
+-----------------
+-------------------
+-------------------
+
+
+Guía práctica: uso de Wildcard Masks en Cisco
+
+¿Qué es una wildcard?
+----------------------
+Una wildcard es una máscara inversa usada por Cisco para definir rangos de direcciones IP en ACLs (Access Control Lists), OSPF, y otras funciones.
+
+Funciona al revés de una máscara de subred:
+- Bit 0 en la wildcard: ese bit debe coincidir exactamente.
+- Bit 1 en la wildcard: ese bit puede variar.
+
+Fórmula:
+Wildcard = 255.255.255.255 - Máscara de subred
+
+-----------------------------------------
+Ejemplos básicos de wildcards
+-----------------------------------------
+
+1. Wildcard 0.0.0.0
+   - Significa coincidencia exacta.
+   Ejemplo:
+   access-list 10 permit 192.168.1.1 0.0.0.0
+   → Solo permite la IP 192.168.1.1
+
+2. Wildcard 0.0.0.255
+   - Coincide con todos los hosts en una subred /24
+   Ejemplo:
+   access-list 10 permit 192.168.1.0 0.0.0.255
+   → Permite de 192.168.1.0 a 192.168.1.255
+
+3. Wildcard 0.0.255.255
+   - Coincide con una red /16
+   Ejemplo:
+   access-list 10 permit 192.168.0.0 0.0.255.255
+   → Permite de 192.168.0.0 a 192.168.255.255
+
+4. Wildcard 0.255.255.255
+   - Coincide con una red /8
+   Ejemplo:
+   access-list 10 permit 10.0.0.0 0.255.255.255
+   → Permite de 10.0.0.0 a 10.255.255.255
+
+5. Wildcard 255.255.255.255
+   - Coincide con cualquier IP (equivalente a "any")
+   Ejemplo:
+   access-list 10 permit any
+   → Lo mismo que: access-list 10 permit 0.0.0.0 255.255.255.255
+
+-----------------------------------------
+Ejemplos aplicados en ACLs
+-----------------------------------------
+
+1. Permitir toda la subred 192.168.1.0/24
+access-list 100 permit ip 192.168.1.0 0.0.0.255 any
+
+2. Bloquear solo al host 192.168.5.10
+access-list 101 deny ip host 192.168.5.10 any
+(O también: access-list 101 deny ip 192.168.5.10 0.0.0.0 any)
+
+3. Permitir solo IPs pares del último octeto (192.168.1.0, .2, .4, etc.)
+access-list 102 permit ip 192.168.1.0 0.0.0.254 any
+(El bit menos significativo es 0, por lo tanto solo pares)
+
+4. Permitir un bloque de 4 IPs (192.168.1.0 a 192.168.1.3)
+access-list 103 permit ip 192.168.1.0 0.0.0.3 any
+
+5. Permitir solo rangos discontinuos
+(Ejemplo más complejo: 192.168.1.0 y 192.168.1.4)
+access-list 104 permit ip 192.168.1.0 0.0.0.4 any
+→ Coincide con .0 y .4
+
+-----------------------------------------
+Conversión de máscaras de subred a wildcard
+-----------------------------------------
+
+CIDR       Máscara         Wildcard
+/30      255.255.255.252   0.0.0.3
+/29      255.255.255.248   0.0.0.7
+/28      255.255.255.240   0.0.0.15
+/27      255.255.255.224   0.0.0.31
+/26      255.255.255.192   0.0.0.63
+/25      255.255.255.128   0.0.0.127
+/24      255.255.255.0     0.0.0.255
+/23      255.255.254.0     0.0.1.255
+/22      255.255.252.0     0.0.3.255
+
+-----------------------------------------
+Uso de host y any
+-----------------------------------------
+
+access-list 105 permit ip host 192.168.1.10 any
+→ Igual a: access-list 105 permit ip 192.168.1.10 0.0.0.0 any
+
+access-list 106
+
