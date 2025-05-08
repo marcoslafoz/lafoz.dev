@@ -392,3 +392,416 @@ copy running-config startup-config
 
 Router1(config)# ip route 192.168.2.0 255.255.255.0 10.0.0.2
 ip route <RED_DESTINO> <MÁSCARA> <GATEWA
+
+---------------
+---------------
+---------------
+
+Guía de configuración de un servidor DHCP en Cisco Packet Tracer
+
+Topología:
+- 2 PCs: PC0 y PC1
+- 2 Switches: Switch0 y Switch1
+- 2 Routers: Router0 (izquierda) y Router1 (derecha)
+- Conexión entre routers por G0/0/0
+- Cada PC conectada a un switch
+- Cada switch conectado a su router respectivo
+
+Tabla de Direcciones IP Propuesta:
+
+Dispositivo        Interfaz     Dirección IP      Máscara           Descripción
+-----------------------------------------------------------------------------------------
+Router0            G0/0/0       192.168.12.1      255.255.255.0     Enlace entre routers
+Router0            G0/0/1       192.168.10.1      255.255.255.0     LAN izquierda
+Router1            G0/0/0       192.168.12.2      255.255.255.0     Enlace entre routers
+Router1            G0/0/1       192.168.20.1      255.255.255.0     LAN derecha
+PC0                Fa0          DHCP              -                 Configurado por DHCP
+PC1                Fa0          DHCP              -                 Configurado por DHCP
+
+Pasos de Configuración:
+
+1. Configurar interfaces en Router0:
+
+Router0> enable
+Router0# configure terminal
+Router0(config)# interface g0/0/0
+Router0(config-if)# ip address 192.168.12.1 255.255.255.0
+Router0(config-if)# no shutdown
+Router0(config-if)# exit
+Router0(config)# interface g0/0/1
+Router0(config-if)# ip address 192.168.10.1 255.255.255.0
+Router0(config-if)# no shutdown
+Router0(config-if)# exit
+
+2. Configurar DHCP en Router0:
+
+Router0(config)# ip dhcp excluded-address 192.168.10.1 192.168.10.10
+Router0(config)# ip dhcp pool LAN-IZQUIERDA
+Router0(dhcp-config)# network 192.168.10.0 255.255.255.0
+Router0(dhcp-config)# default-router 192.168.10.1
+Router0(dhcp-config)# dns-server 8.8.8.8
+Router0(dhcp-config)# exit
+
+3. Configurar interfaces en Router1:
+
+Router1> enable
+Router1# configure terminal
+Router1(config)# interface g0/0/0
+Router1(config-if)# ip address 192.168.12.2 255.255.255.0
+Router1(config-if)# no shutdown
+Router1(config-if)# exit
+Router1(config)# interface g0/0/1
+Router1(config-if)# ip address 192.168.20.1 255.255.255.0
+Router1(config-if)# no shutdown
+Router1(config-if)# exit
+
+4. Configurar DHCP en Router1:
+
+Router1(config)# ip dhcp excluded-address 192.168.20.1 192.168.20.10
+Router1(config)# ip dhcp pool LAN-DERECHA
+Router1(dhcp-config)# network 192.168.20.0 255.255.255.0
+Router1(dhcp-config)# default-router 192.168.20.1
+Router1(dhcp-config)# dns-server 8.8.8.8
+Router1(dhcp-config)# exit
+
+5. Configurar rutas estáticas para permitir comunicación entre LANs:
+
+En Router0:
+Router0(config)# ip route 192.168.20.0 255.255.255.0 192.168.12.2
+
+En Router1:
+Router1(config)# ip route 192.168.10.0 255.255.255.0 192.168.12.1
+
+6. Configurar las PCs para usar DHCP:
+
+En PC0:
+- Ir a Desktop > IP Configuration > Seleccionar DHCP
+
+En PC1:
+- Ir a Desktop > IP Configuration > Seleccionar DHCP
+
+7. Verificación:
+
+- Ejecutar el comando "ipconfig" en ambas PCs para verificar la asignación automática de IP.
+- Realizar pruebas de conectividad con "ping" entre las PCs.
+
+
+--------------
+--------------
+--------------
+
+Guía práctica del comando ip route en Cisco IOS
+
+Descripción:
+El comando `ip route` se utiliza para configurar rutas estáticas en routers Cisco. Este comando le indica al router cómo llegar a redes que no están conectadas directamente.
+
+Sintaxis básica:
+ip route [RED_DESTINO] [MÁSCARA] [PRÓXIMO_SALTO | INTERFAZ_DE_SALIDA]
+
+Parámetros:
+- RED_DESTINO: La red a la que se quiere llegar.
+- MÁSCARA: La máscara de subred correspondiente a la red de destino.
+- PRÓXIMO_SALTO: La dirección IP del siguiente router (gateway).
+- INTERFAZ_DE_SALIDA: Interfaz por la que se debe enviar el tráfico (opcional pero útil en redes sencillas).
+
+Ejemplo 1: Ruta estática usando dirección del próximo salto
+Supongamos que el router tiene la red local 192.168.1.0/24 y debe alcanzar 10.0.0.0/8 a través del router vecino con IP 192.168.1.2.
+
+Comando:
+ip route 10.0.0.0 255.0.0.0 192.168.1.2
+
+Este comando le indica al router que para llegar a la red 10.0.0.0/8 debe enviar los paquetes al router con IP 192.168.1.2.
+
+Ejemplo 2: Ruta estática usando interfaz de salida
+ip route 172.16.0.0 255.255.0.0 GigabitEthernet0/0
+
+En este caso, el router enviará paquetes destinados a la red 172.16.0.0/16 directamente por la interfaz G0/0.
+
+Ejemplo 3: Ruta estática con interfaz de salida y siguiente salto
+ip route 192.168.2.0 255.255.255.0 GigabitEthernet0/1 192.168.1.2
+
+Este formato más completo especifica tanto la interfaz como el siguiente salto.
+
+Ejemplo 4: Ruta por defecto (default route)
+Una ruta por defecto se usa cuando el router no conoce otra ruta específica.
+
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+
+Este comando indica que cualquier tráfico hacia una red no conocida será enviado a la dirección 192.168.1.1 (el gateway de salida).
+
+Verificación de rutas:
+
+Para verificar que las rutas se han configurado correctamente, usa los siguientes comandos:
+
+- show ip route
+  Muestra la tabla de enrutamiento completa.
+
+- show running-config
+  Muestra la configuración activa, incluidas las rutas estáticas.
+
+- ping [DIRECCIÓN_DESTINO]
+  Permite probar la conectividad hacia una red o dispositivo.
+
+Notas adicionales:
+- Las rutas estáticas no se actualizan automáticamente. Si cambia la topología de red, deben actualizarse manualmente.
+- Es común usar rutas estáticas en redes pequeñas o como respaldo para protocolos de enrutamiento dinámico.
+
+
+--------------
+--------------
+--------------
+
+Guía práctica de configuración de Inter-VLAN Routing en Cisco
+
+Objetivo:
+Permitir la comunicación entre diferentes VLANs usando un router o un switch multicapa.
+
+Tipos de Inter-VLAN Routing:
+1. Router-on-a-Stick (con router y switch de capa 2)
+2. Switch Multicapa (Switch L3 configurando SVI)
+
+---------------------------------------------------
+1. Router-on-a-Stick (RoaS)
+---------------------------------------------------
+
+Requisitos:
+- Switch capa 2 con VLANs configuradas
+- Router con subinterfaces
+- Trunk entre switch y router
+
+Topología Ejemplo:
+- VLAN 10: 192.168.10.0/24
+- VLAN 20: 192.168.20.0/24
+- Router interfaz G0/0 conectada al switch
+
+Pasos:
+
+a) Crear VLANs en el switch
+Switch> enable
+Switch# configure terminal
+Switch(config)# vlan 10
+Switch(config-vlan)# name Ventas
+Switch(config-vlan)# exit
+Switch(config)# vlan 20
+Switch(config-vlan)# name Soporte
+Switch(config-vlan)# exit
+
+b) Asignar puertos a las VLANs
+Switch(config)# interface fastEthernet0/1
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+
+Switch(config)# interface fastEthernet0/2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 20
+Switch(config-if)# exit
+
+c) Configurar el puerto trunk hacia el router
+Switch(config)# interface gigabitEthernet0/1
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# exit
+
+d) Configurar subinterfaces en el router
+Router> enable
+Router# configure terminal
+Router(config)# interface gigabitEthernet0/0.10
+Router(config-subif)# encapsulation dot1Q 10
+Router(config-subif)# ip address 192.168.10.1 255.255.255.0
+Router(config-subif)# exit
+
+Router(config)# interface gigabitEthernet0/0.20
+Router(config-subif)# encapsulation dot1Q 20
+Router(config-subif)# ip address 192.168.20.1 255.255.255.0
+Router(config-subif)# exit
+
+Router(config)# interface gigabitEthernet0/0
+Router(config-if)# no shutdown
+Router(config-if)# exit
+
+e) Configurar PCs con IPs correspondientes
+PC1: IP 192.168.10.10, Gateway 192.168.10.1
+PC2: IP 192.168.20.10, Gateway 192.168.20.1
+
+f) Verificación
+- Desde cada PC, hacer ping a la IP de la otra VLAN
+- Usar show ip interface brief y show vlan en el switch
+- show ip route en el router para verificar rutas
+
+---------------------------------------------------
+2. Inter-VLAN Routing con Switch Multicapa
+---------------------------------------------------
+
+Requisitos:
+- Switch L3
+- No se necesita router externo
+- Se usan interfaces virtuales (SVI)
+
+Pasos:
+
+a) Crear VLANs
+Switch(config)# vlan 10
+Switch(config-vlan)# name Ventas
+Switch(config-vlan)# exit
+Switch(config)# vlan 20
+Switch(config-vlan)# name Soporte
+Switch(config-vlan)# exit
+
+b) Asignar puertos a VLANs (igual que antes)
+
+c) Crear interfaces VLAN (SVI)
+Switch(config)# interface vlan 10
+Switch(config-if)# ip address 192.168.10.1 255.255.255.0
+Switch(config-if)# no shutdown
+Switch(config-if)# exit
+
+Switch(config)# interface vlan 20
+Switch(config-if)# ip address 192.168.20.1 255.255.255.0
+Switch(config-if)# no shutdown
+Switch(config-if)# exit
+
+d) Activar el enrutamiento IP en el switch
+Switch(config)# ip routing
+
+e) Configurar PCs con IPs y gateways como en RoaS
+
+f) Verificación
+- ping entre PCs de VLANs distintas
+- show ip interface brief
+- show ip route
+
+Notas:
+- Router-on-a-stick es ideal para redes pequeñas
+- Switch multicapa es más escalable y eficiente en redes medianas o grandes
+
+Fin de la guía.
+
+
+-----------------
+-----------------
+-----------------
+
+Guía práctica de configuración de Inter-VLAN Routing en Cisco
+
+Objetivo:
+Permitir la comunicación entre diferentes VLANs usando un router o un switch multicapa.
+
+Tipos de Inter-VLAN Routing:
+1. Router-on-a-Stick (con router y switch de capa 2)
+2. Switch Multicapa (Switch L3 configurando SVI)
+
+---------------------------------------------------
+1. Router-on-a-Stick (RoaS)
+---------------------------------------------------
+
+Requisitos:
+- Switch capa 2 con VLANs configuradas
+- Router con subinterfaces
+- Trunk entre switch y router
+
+Topología Ejemplo:
+- VLAN 10: 192.168.10.0/24
+- VLAN 20: 192.168.20.0/24
+- Router interfaz G0/0 conectada al switch
+
+Pasos:
+
+a) Crear VLANs en el switch
+Switch> enable
+Switch# configure terminal
+Switch(config)# vlan 10
+Switch(config-vlan)# name Ventas
+Switch(config-vlan)# exit
+Switch(config)# vlan 20
+Switch(config-vlan)# name Soporte
+Switch(config-vlan)# exit
+
+b) Asignar puertos a las VLANs
+Switch(config)# interface fastEthernet0/1
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 10
+Switch(config-if)# exit
+
+Switch(config)# interface fastEthernet0/2
+Switch(config-if)# switchport mode access
+Switch(config-if)# switchport access vlan 20
+Switch(config-if)# exit
+
+c) Configurar el puerto trunk hacia el router
+Switch(config)# interface gigabitEthernet0/1
+Switch(config-if)# switchport mode trunk
+Switch(config-if)# exit
+
+d) Configurar subinterfaces en el router
+Router> enable
+Router# configure terminal
+Router(config)# interface gigabitEthernet0/0.10
+Router(config-subif)# encapsulation dot1Q 10
+Router(config-subif)# ip address 192.168.10.1 255.255.255.0
+Router(config-subif)# exit
+
+Router(config)# interface gigabitEthernet0/0.20
+Router(config-subif)# encapsulation dot1Q 20
+Router(config-subif)# ip address 192.168.20.1 255.255.255.0
+Router(config-subif)# exit
+
+Router(config)# interface gigabitEthernet0/0
+Router(config-if)# no shutdown
+Router(config-if)# exit
+
+e) Configurar PCs con IPs correspondientes
+PC1: IP 192.168.10.10, Gateway 192.168.10.1
+PC2: IP 192.168.20.10, Gateway 192.168.20.1
+
+f) Verificación
+- Desde cada PC, hacer ping a la IP de la otra VLAN
+- Usar show ip interface brief y show vlan en el switch
+- show ip route en el router para verificar rutas
+
+---------------------------------------------------
+2. Inter-VLAN Routing con Switch Multicapa
+---------------------------------------------------
+
+Requisitos:
+- Switch L3
+- No se necesita router externo
+- Se usan interfaces virtuales (SVI)
+
+Pasos:
+
+a) Crear VLANs
+Switch(config)# vlan 10
+Switch(config-vlan)# name Ventas
+Switch(config-vlan)# exit
+Switch(config)# vlan 20
+Switch(config-vlan)# name Soporte
+Switch(config-vlan)# exit
+
+b) Asignar puertos a VLANs (igual que antes)
+
+c) Crear interfaces VLAN (SVI)
+Switch(config)# interface vlan 10
+Switch(config-if)# ip address 192.168.10.1 255.255.255.0
+Switch(config-if)# no shutdown
+Switch(config-if)# exit
+
+Switch(config)# interface vlan 20
+Switch(config-if)# ip address 192.168.20.1 255.255.255.0
+Switch(config-if)# no shutdown
+Switch(config-if)# exit
+
+d) Activar el enrutamiento IP en el switch
+Switch(config)# ip routing
+
+e) Configurar PCs con IPs y gateways como en RoaS
+
+f) Verificación
+- ping entre PCs de VLANs distintas
+- show ip interface brief
+- show ip route
+
+Notas:
+- Router-on-a-stick es ideal para redes pequeñas
+- Switch multicapa es más escalable y eficiente en redes medianas o grandes
+
+Fin de la guía.
