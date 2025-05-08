@@ -153,3 +153,242 @@ copy running-config startup-config
 
 Router1(config)# ip route 192.168.2.0 255.255.255.0 10.0.0.2
 ip route <RED_DESTINO> <MÁSCARA> <GATEWAY/INTERFAZ por la que tiene que pasar>
+
+
+---------------
+---------------
+---------------
+
+Configuracion Basica Switch
+hostname NombreDelSwitch
+line vty 0 15
+password TuContraseñaVTY
+login
+enable secret “TuContraseñaEnable”
+copy running-config startup-config
+
+Configurar VLAN
+vlan [ID_VLAN]
+name [nombre_VLAN]
+interface [tipo_interface] [número_interface]
+switchport mode access
+switchport access vlan [ID_VLAN]
+interface [tipo_interface] [número_interface]
+switchport mode trunk
+switchport trunk allowed vlan [ID_VLAN]
+
+interface vlan 10
+ip address 192.168.10.1 255.255.255.0
+no shutdown
+
+
+Spanning tree
+spanning-tree mode [pvst | rapid-pvst | mst]
+spanning-tree vlan [ID_VLAN] priority [valor_prioridad]
+interface [tipo_interface] [número_interface]
+spanning-tree cost [valor_costo]
+
+Montar DHCP en Router
+ip dhcp pool [nombre_pool]
+network [dirección_red] [máscara_subred]
+default-router [dirección_IP_puerta_enlace]
+dns-server [dirección_IP_servidor_DNS]
+ip dhcp excluded-address [dirección_IP_inicial] [dirección_IP_final]
+
+Listas ACL
+access-list [número] [permit | deny] [dirección_IP] [wildcard_mask]
+(access-list 10 permit 192.168.1.0 0.0.0.255)
+interface [tipo_interface] [número_interface]
+ip access-group [número] [in | out]
+(interface GigabitEthernet0/1)
+(ip access-group 10 in)
+
+
+Listas ACL Ext.
+access-list [número] [permit | deny] [protocolo] [dirección_IP_origen] [wildcard_mask] [dirección_IP_destino] [wildcard_mask] [eq | gt | lt | neq | range] [puerto]
+(access-list 100 permit tcp 192.168.1.0 0.0.0.255 any eq 80)
+interface [tipo_interface] [número_interface]
+ip access-group [número] [in | out]
+(interface GigabitEthernet0/1)
+(ip access-group 100 out)
+
+ACL Extra
+show access-lists
+no access-list [número]
+access-list [número] [permit | deny] [dirección_IP] [wildcard_mask]
+
+VTP
+vtp domain NombreDelDominio
+vtp mode server
+O
+vtp mode cliente
+interface fa0/1
+switchport mode trunk
+
+DHCP
+dhcp pool RED_LOCAL 
+network [dirección_IP][wildcard_mask]
+default-router [dirección_IP]
+dns-server [red]
+ip dhcp excluded-address [dirección_IP]entre[dirección_IP]
+show ip dhcp binding
+show ip dhcp pool
+show running-config
+interface GigabitEthernet 0/1 
+ip helper-address  [dirección_IP]
+
+# VLAN (Switch)
+```
+enable
+configure terminal
+vlan 10
+name ventas
+interface FastEthernet 0/1
+switchport mode access
+switchport access vlan 10
+exit
+```
+
+# TRUNK MODE (Switch)
+```
+interface GigabitEthernet 0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,20
+exit
+```
+## VLAN TRUNK DEFAULT (Opcional)
+```
+switchport trunk native vlan 99
+```
+
+#  VTP - Propagación (Switch)
+```
+enable
+configure terminal
+vtp domain miempresa.com
+vtp mode server
+vtp version 2
+// vtp password contrasena
+exit
+enable
+configure terminal
+vtp domain miempresa.com
+vtp mode client
+// vtp password contrasena
+exit
+```
+
+
+## STATUS
+```
+show vlan brief
+show vtp status
+show interfaces trunk
+show running-config interface FastEthernet 0/1
+write memory
+```
+
+# DHCP (Router)
+```
+
+enable
+configure terminal
+ip routing
+interface vlan 1
+ip address 192.168.1.1 255.255.255.0
+no shut
+ip dhcp pool RED_LOCAL
+network 192.168.1.0 255.255.255.0
+default-router 192.168.1.1
+dns-server 8.8.8.8 8.8.4.4
+ip dhcp excluded-address 192.168.1.1 192.168.1.10
+// lease 8
+service dhcp
+```
+
+## STATUS
+```
+show ip dhcp binding
+show ip dhcp pool
+show running-config
+write memory
+```
+
+# ETHERCHANNEL (SWITCH)
+```
+enable
+configure terminal
+interface range FastEthernet 0/1 - 2
+// LACP active - passive - on (o-o, a-a, a-p)
+channel-group 1 mode active
+// PAgP desirable - auto (d-d, d-a)
+channel-group 1 mode desirable
+interface Port-channel 1
+switchport mode trunk
+switchport trunk allowed vlan all
+# SWITCH STATUS write memory
+show etherchannel summary
+```
+
+# STP (Switch)
+```
+enable
+configure terminal
+spanning-tree vlan 1 priority 0
+// spanning-tree vlan 1 root secondary
+// spanning-tree mode rapid-pvst
+// SWITCH PORTFAST (Host)
+interface FastEthernet 0/10
+spanning-tree portfast
+// SWITCH STATUS write memory
+show spanning-tree
+show spanning-tree active
+```
+
+# ACL (Router)
+```
+Red: 192.168.1.0/24 → Máscara 255.255.255.0
+Wildcard: 0.0.0.255
+```
+
+## ACL estándar
+
+```
+access-list 1 permit 192.168.1.0 0.0.0.255
+```
+## ACL extendida
+
+```
+access-list 100 permit tcp 192.168.1.0 0.0.0.255 any eq 80
+```
+
+## ACL Nombrada
+```
+ip access-list extended FILTRO_WEB
+permit tcp 192.168.1.0 0.0.0.255 any eq 80
+deny ip any any
+exit
+// Aplicarla
+interface FastEthernet 0/0
+ip access-group 100 in / out
+exit
+show access-lists
+```
+
+# CONFIGURACIÓN BÁSICA
+```
+
+interface fa0/0
+ip address 192.168.1.1 255.255.255.0
+ip domain-name "dominio.com"
+crypto key generate rsa
+username nombreUsuario privilege 15 secret contraseña123
+line vty 0 4
+login local
+transport input ssh
+
+show running-config
+copy running-config startup-config
+
+Router1(config)# ip route 192.168.2.0 255.255.255.0 10.0.0.2
+ip route <RED_DESTINO> <MÁSCARA> <GATEWA
